@@ -82,7 +82,7 @@ export default function GitHubStatus() {
         setManualOverride(null)
         setButtonLabel('GitHub Down!')
         manualTimerRef.current = null
-      }, 1000)
+      }, 5000)
     }
   }
 
