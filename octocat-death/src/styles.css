@@ -258,3 +258,9 @@ a {
   color: var(--sea-ink-soft);
   margin: 0;
 }
+
+.status-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: color-mix(in oklab, var(--sea-ink-soft) 88%, white 12%);
+}

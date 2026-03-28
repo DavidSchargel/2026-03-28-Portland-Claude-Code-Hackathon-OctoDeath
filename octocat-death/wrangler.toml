@@ -1,0 +1,11 @@
+name = "github-death"
+main = "worker/index.ts"
+compatibility_date = "2026-03-28"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+[[routes]]
+pattern = "github-death.inpdx.com"
+custom_domain = true

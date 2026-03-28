@@ -4,7 +4,7 @@ A live GitHub status monitor that plays Lottie animations based on whether githu
 
 ## What it does
 
-Polls `github.com` every 10 seconds via a server-side proxy (to avoid CORS) and displays one of three animations:
+Polls `github.com` every 10 seconds through a Cloudflare Worker endpoint and displays one of three animations:
 
 | Animation | Trigger |
 |-----------|---------|
@@ -12,24 +12,40 @@ Polls `github.com` every 10 seconds via a server-side proxy (to avoid CORS) and 
 | `lottie-github-down.json` | GitHub is not reachable |
 | `lottie-github-victory.json` | GitHub comes back online — plays for 5 seconds, then returns to "up" |
 
-A toggle button at the top lets you simulate an outage independently of the real poll. Pressing **GitHub Down!** immediately plays the down animation; pressing **GitHub Up!** plays victory for 1 second and then resets.
+A toggle button at the top lets you simulate an outage independently of the real poll. Pressing **GitHub Down!** immediately plays the down animation; pressing **GitHub Up!** plays victory for 5 seconds and then resets.
 
 ## Stack
 
-- [TanStack Start](https://tanstack.com/start) — React SSR framework
-- [TanStack Router](https://tanstack.com/router) — file-based routing
-- [lottie-react](https://github.com/LottieFiles/lottie-react) — animation playback
+- React + Vite
+- Cloudflare Workers static assets + API route
+- `lottie-react`
 - Plain CSS + Tailwind CSS
 
 ## Development
 
 The project lives in the `octocat-death/` subdirectory — `cd` into it before running any commands.
 
-
 ```bash
 cd octocat-death
 npm install
-npm run dev      # http://localhost:3000
+npm run dev
 npm run build
-npm run test
+npm run preview
 ```
+
+## Deploy to Cloudflare Workers
+
+1. Authenticate Wrangler:
+   ```bash
+   npx wrangler login
+   ```
+2. Build and deploy:
+   ```bash
+   npm run build
+   npx wrangler deploy
+   ```
+3. In Cloudflare DNS, ensure `github-death.inpdx.com` is proxied and attached to this Worker route.
+
+The Worker config lives in `wrangler.jsonc` and serves:
+- `/api/status` → live GitHub probe
+- `/*` → static frontend from `dist/`

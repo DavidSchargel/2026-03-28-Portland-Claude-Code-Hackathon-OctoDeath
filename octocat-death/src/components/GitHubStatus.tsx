@@ -1,5 +1,4 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { createServerFn } from '@tanstack/react-start'
 
 const LottiePlayer = lazy(() =>
   import('lottie-react').then((mod) => ({ default: mod.default })),
@@ -9,26 +8,27 @@ import animationUp from '../assets/lottie-github-up.json'
 import animationDown from '../assets/lottie-github-down.json'
 import animationVictory from '../assets/lottie-github-victory.json'
 
-const fetchGitHubStatus = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    try {
-      const response = await fetch('https://github.com', {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(5000),
-      })
-      return { up: response.ok }
-    } catch {
-      return { up: false }
-    }
-  },
-)
-
 type Status = 'up' | 'down' | 'victory'
+
+async function fetchGitHubStatus() {
+  const response = await fetch('/api/status', {
+    headers: {
+      accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Status request failed with ${response.status}`)
+  }
+
+  return (await response.json()) as { up: boolean }
+}
 
 export default function GitHubStatus() {
   const [realStatus, setRealStatus] = useState<'up' | 'down'>('up')
   const [manualOverride, setManualOverride] = useState<Status | null>(null)
   const [buttonLabel, setButtonLabel] = useState('GitHub Down!')
+  const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null)
   const victoryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const manualTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevRealStatus = useRef<'up' | 'down'>('up')
@@ -37,8 +37,10 @@ export default function GitHubStatus() {
     try {
       const data = await fetchGitHubStatus()
       setRealStatus(data.up ? 'up' : 'down')
+      setLastCheckedAt(new Date().toLocaleTimeString())
     } catch {
       setRealStatus('down')
+      setLastCheckedAt(new Date().toLocaleTimeString())
     }
   }, [])
 
@@ -117,6 +119,9 @@ export default function GitHubStatus() {
           : displayStatus === 'up'
             ? 'GitHub is up'
             : 'GitHub is down'}
+      </p>
+      <p className="status-meta">
+        Live status via Cloudflare Worker{lastCheckedAt ? ` · last checked ${lastCheckedAt}` : ''}
       </p>
     </div>
   )
