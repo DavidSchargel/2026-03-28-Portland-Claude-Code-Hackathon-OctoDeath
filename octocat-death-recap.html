@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>octocat-death &mdash; Project Recap</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* === Variables === */
+    :root {
+      --bg:             #faf6f0;
+      --bg-deep:        #f2ebe0;
+      --surface:        rgba(255,255,255,0.86);
+      --surface-strong: rgba(255,255,255,0.97);
+      --border:         rgba(30,52,40,0.09);
+      --border-strong:  rgba(30,52,40,0.16);
+      --text:           #1e3428;
+      --text-dim:       #516860;
+      --text-faint:     #90aaa0;
+      --blue:           #3a7ca5;
+      --blue-dim:       rgba(58,124,165,0.11);
+      --blue-deep:      #2d6285;
+      --sage:           #4a8c6a;
+      --sage-dim:       rgba(74,140,106,0.11);
+      --sage-deep:      #2e6b50;
+      --amber:          #c07a28;
+      --amber-dim:      rgba(192,122,40,0.10);
+      --amber-deep:     #9c6220;
+      --terra:          #b44039;
+      --terra-dim:      rgba(180,64,57,0.10);
+      --mint:           #2b7a5c;
+      --mint-dim:       rgba(43,122,92,0.10);
+      --shadow-sm: 0 1px 3px rgba(20,50,30,0.07), 0 1px 2px rgba(20,50,30,0.05);
+      --shadow-md: 0 4px 14px rgba(20,50,30,0.09), 0 2px 6px rgba(20,50,30,0.06);
+      --shadow-lg: 0 12px 36px rgba(20,50,30,0.11), 0 4px 12px rgba(20,50,30,0.07);
+      --serif: 'IBM Plex Serif', Georgia, serif;
+      --mono:  'IBM Plex Mono', 'Courier New', monospace;
+      --sans:  'IBM Plex Sans', system-ui, sans-serif;
+      --nav-w: 224px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:             #191f1c;
+        --bg-deep:        #131810;
+        --surface:        rgba(28,38,30,0.90);
+        --surface-strong: rgba(36,48,38,0.96);
+        --border:         rgba(160,210,180,0.08);
+        --border-strong:  rgba(160,210,180,0.14);
+        --text:           #d4e8dc;
+        --text-dim:       #88a89a;
+        --text-faint:     #587060;
+        --blue:           #5ca8d4;
+        --blue-dim:       rgba(92,168,212,0.12);
+        --blue-deep:      #7dbfe6;
+        --sage:           #6ab88e;
+        --sage-dim:       rgba(106,184,142,0.12);
+        --sage-deep:      #88d4a8;
+        --amber:          #e6a844;
+        --amber-dim:      rgba(230,168,68,0.10);
+        --amber-deep:     #efba68;
+        --terra:          #e06858;
+        --terra-dim:      rgba(224,104,88,0.10);
+        --mint:           #58bf92;
+        --mint-dim:       rgba(88,191,146,0.10);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.22);
+        --shadow-md: 0 4px 14px rgba(0,0,0,0.28);
+        --shadow-lg: 0 12px 36px rgba(0,0,0,0.34);
+      }
+    }
+
+    /* === Reset === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 900px 580px at -5% -8%, rgba(74,140,106,0.08), transparent 58%),
+        radial-gradient(ellipse 750px 500px at 108% 20%, rgba(58,124,165,0.07), transparent 55%),
+        radial-gradient(ellipse 600px 400px at 52% 104%, rgba(192,122,40,0.05), transparent 58%);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* === Layout === */
+    .layout { display: grid; grid-template-columns: var(--nav-w) 1fr; min-height: 100vh; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+    /* === Sidebar === */
+    .sidebar {
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; border-right: 1px solid var(--border);
+      background: var(--surface); display: flex; flex-direction: column;
+      scrollbar-width: thin;
+    }
+    @media (max-width: 900px) { .sidebar { display: none; } }
+    .sb-brand { padding: 1.5rem 1.25rem 1.125rem; border-bottom: 1px solid var(--border); }
+    .sb-eyebrow {
+      font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-faint); display: block; margin-bottom: 0.25rem;
+    }
+    .sb-name { font-family: var(--serif); font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .sb-nav { padding: 0.75rem 0; }
+    .sb-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 1.25rem; font-size: 0.8rem; font-weight: 500;
+      color: var(--text-dim); text-decoration: none; position: relative;
+      transition: color 140ms ease, background 140ms ease;
+    }
+    .sb-link::before {
+      content: ''; position: absolute; left: 0; top: 50%;
+      transform: translateY(-50%) scaleY(0); width: 2px; height: 55%;
+      background: var(--sage); border-radius: 1px; transition: transform 140ms ease;
+    }
+    .sb-link:hover, .sb-link.active { color: var(--text); background: var(--sage-dim); }
+    .sb-link.active::before { transform: translateY(-50%) scaleY(1); }
+    .sb-num { font-family: var(--mono); font-size: 0.62rem; color: var(--text-faint); min-width: 1.5rem; }
+
+    /* === Mobile Nav === */
+    .mobile-nav {
+      display: none; position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+    .mobile-nav::-webkit-scrollbar { display: none; }
+    @media (max-width: 900px) { .mobile-nav { display: block; } }
+    .mn-inner { display: inline-flex; padding: 0 0.5rem; }
+    .mn-link {
+      display: inline-block; padding: 0.7rem 0.75rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--text-dim);
+      text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap;
+      transition: color 140ms ease, border-color 140ms ease;
+    }
+    .mn-link:hover, .mn-link.active { color: var(--text); border-bottom-color: var(--sage); }
+
+    /* === Main === */
+    .main { min-width: 0; padding: 2.5rem 2.75rem 6rem; }
+    @media (max-width: 700px) { .main { padding: 1.5rem 1.125rem 5rem; } }
+    .section { max-width: 880px; margin-bottom: 4.5rem; }
+
+    /* === Section labels === */
+    .s-label {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-faint); margin-bottom: 0.375rem;
+    }
+    .s-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .s-dot.blue  { background: var(--blue); }
+    .s-dot.sage  { background: var(--sage); }
+    .s-dot.amber { background: var(--amber); }
+    .s-dot.terra { background: var(--terra); }
+    .s-dot.mint  { background: var(--mint); }
+    .s-title { font-family: var(--serif); font-size: 1.7rem; font-weight: 600; color: var(--text); line-height: 1.2; margin-bottom: 0.2rem; }
+    .s-sub { font-size: 0.875rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 1.5rem; max-width: 640px; }
+
+    /* === Hero card === */
+    .hero-wrap {
+      background: var(--surface-strong); border: 1px solid var(--border-strong);
+      border-radius: 16px; padding: 2.25rem 2.5rem;
+      box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+    }
+    .hero-wrap::before {
+      content: ''; position: absolute; top: -90px; right: -90px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(74,140,106,0.10), transparent 68%);
+      pointer-events: none;
+    }
+    .hero-wrap::after {
+      content: ''; position: absolute; bottom: -70px; left: -70px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(58,124,165,0.08), transparent 68%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--sage); display: block; margin-bottom: 0.5rem;
+    }
+    .hero-title {
+      font-family: var(--serif); font-size: 2.5rem; font-weight: 600;
+      color: var(--text); line-height: 1.12; margin-bottom: 0.6rem;
+    }
+    @media (max-width: 600px) { .hero-title { font-size: 1.9rem; } }
+    .hero-pitch { font-size: 1.025rem; color: var(--text-dim); line-height: 1.65; max-width: 580px; margin-bottom: 1.75rem; }
+    .hero-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 0.75rem; }
+    .hero-meta { background: var(--bg-deep); border: 1px solid var(--border); border-radius: 8px; padding: 0.625rem 0.875rem; min-width: 0; }
+    .hm-label { font-family: var(--mono); font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); display: block; margin-bottom: 0.2rem; }
+    .hm-value { font-size: 0.845rem; font-weight: 600; color: var(--text); overflow-wrap: break-word; }
+    .hm-value code { font-family: var(--mono); font-size: 0.8rem; background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; }
+
+    /* === Badges === */
+    .badge { display: inline-block; font-family: var(--mono); font-size: 0.65rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; line-height: 1.5; }
+    .b-sage  { background: var(--sage-dim);  color: var(--sage-deep);  border: 1px solid rgba(74,140,106,0.2); }
+    .b-amber { background: var(--amber-dim); color: var(--amber-deep); border: 1px solid rgba(192,122,40,0.2); }
+    .b-blue  { background: var(--blue-dim);  color: var(--blue-deep);  border: 1px solid rgba(58,124,165,0.2); }
+
+    /* === Diagram hero === */
+    .diagram-hero {
+      background: var(--surface-strong); border: 1px solid var(--border-strong);
+      border-radius: 16px; padding: 1.75rem; box-shadow: var(--shadow-lg);
+      background-image: radial-gradient(ellipse 600px 280px at 50% 0%, rgba(58,124,165,0.05), transparent 70%);
+    }
+
+    /* === Mermaid Shell === */
+    .mermaid-wrap {
+      position: relative; border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; background: var(--bg-deep); user-select: none;
+    }
+    .mermaid-viewport {
+      overflow: hidden; width: 100%; cursor: grab;
+      min-height: 340px; display: flex; align-items: center; justify-content: center;
+    }
+    .mermaid-viewport.is-dragging { cursor: grabbing; }
+    .mermaid-canvas {
+      transform-origin: 0 0; display: flex; align-items: center;
+      justify-content: center; padding: 1.5rem;
+    }
+    .mermaid-canvas svg { max-width: none !important; display: block; }
+    .zoom-controls { position: absolute; top: 0.6rem; right: 0.6rem; display: flex; gap: 0.25rem; z-index: 10; }
+    .zoom-btn {
+      width: 28px; height: 28px; border: 1px solid var(--border-strong);
+      background: var(--surface-strong); color: var(--text-dim);
+      font-family: var(--mono); font-size: 0.82rem; border-radius: 6px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 110ms ease, color 110ms ease; padding: 0;
+    }
+    .zoom-btn:hover { background: var(--surface); color: var(--text); }
+
+    /* === Timeline === */
+    .timeline { position: relative; padding-left: 1.5rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+      width: 2px; background: linear-gradient(to bottom, var(--sage-dim), var(--blue-dim)); border-radius: 1px;
+    }
+    .tl-group { margin-bottom: 2.25rem; }
+    .tl-group-head { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.875rem; position: relative; }
+    .tl-group-head::before {
+      content: ''; position: absolute; left: -1.5rem;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--sage); border: 2px solid var(--bg); transform: translateX(-4px);
+    }
+    .tl-group-head.blue::before  { background: var(--blue); }
+    .tl-group-head.amber::before { background: var(--amber); }
+    .tl-group-head.mint::before  { background: var(--mint); }
+    .tl-group-title { font-family: var(--mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-dim); }
+    .tl-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.875rem 1.125rem; margin-bottom: 0.625rem; box-shadow: var(--shadow-sm); min-width: 0; }
+    .tl-title { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; overflow-wrap: break-word; }
+    .tl-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.55; overflow-wrap: break-word; }
+    .tl-desc code { font-family: var(--mono); font-size: 0.82em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+    .tl-tag { display: inline-block; font-family: var(--mono); font-size: 0.62rem; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-right: 0.3rem; margin-bottom: 0.3rem; }
+    .tag-feat  { background: var(--sage-dim);  color: var(--sage-deep); }
+    .tag-infra { background: var(--blue-dim);  color: var(--blue-deep); }
+    .tag-style { background: var(--mint-dim);  color: var(--mint); }
+
+    /* === Decision Log === */
+    .dec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 0.875rem; box-shadow: var(--shadow-sm); min-width: 0; }
+    .dec-title { font-family: var(--serif); font-size: 0.975rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; overflow-wrap: break-word; }
+    .dec-title code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; }
+    .dec-body { font-size: 0.84rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 0.75rem; overflow-wrap: break-word; }
+    .dec-body code { font-family: var(--mono); font-size: 0.82em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+    .dec-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+    /* === KPI Cards === */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 1rem; }
+    .kpi-card {
+      background: var(--surface-strong); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.375rem 1.5rem;
+      box-shadow: var(--shadow-md); min-width: 0; position: relative; overflow: hidden;
+    }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+    .kpi-card.kpi-green::before  { background: var(--sage); }
+    .kpi-card.kpi-blue::before   { background: var(--blue); }
+    .kpi-card.kpi-amber::before  { background: var(--amber); }
+    .kpi-card.kpi-red::before    { background: var(--terra); }
+    .kpi-label { font-family: var(--mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); display: block; margin-bottom: 0.375rem; }
+    .kpi-num { font-family: var(--serif); font-size: 2.6rem; font-weight: 600; line-height: 1; display: block; margin-bottom: 0.35rem; }
+    .kpi-card.kpi-green .kpi-num { color: var(--sage); }
+    .kpi-card.kpi-blue  .kpi-num { color: var(--blue); }
+    .kpi-card.kpi-amber .kpi-num { color: var(--amber); }
+    .kpi-card.kpi-red   .kpi-num { color: var(--terra); }
+    .kpi-desc { font-size: 0.79rem; color: var(--text-dim); line-height: 1.4; margin-bottom: 0.625rem; overflow-wrap: break-word; }
+    .kpi-list { list-style: none; }
+    .kpi-list li { position: relative; padding-left: 0.875rem; font-size: 0.77rem; color: var(--text-dim); margin-bottom: 0.2rem; line-height: 1.45; overflow-wrap: break-word; }
+    .kpi-list li::before { content: '\00b7'; position: absolute; left: 0.125rem; color: var(--text-faint); }
+
+    /* === Mental Model === */
+    .mental-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.875rem; }
+    .mental-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.125rem; box-shadow: var(--shadow-sm); min-width: 0; }
+    .mc-num { font-family: var(--mono); font-size: 0.6rem; font-weight: 600; color: var(--text-faint); display: block; margin-bottom: 0.25rem; }
+    .mc-title { font-size: 0.855rem; font-weight: 700; color: var(--text); margin-bottom: 0.375rem; overflow-wrap: break-word; }
+    .mc-title code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; }
+    .mc-body { font-size: 0.81rem; color: var(--text-dim); line-height: 1.55; overflow-wrap: break-word; }
+    .mc-body code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+
+    /* === Cognitive Debt === */
+    .debt-card { border-radius: 10px; padding: 1.125rem 1.25rem 1.125rem 1.5rem; margin-bottom: 0.75rem; border: 1px solid var(--border); background: var(--surface); position: relative; overflow: hidden; min-width: 0; box-shadow: var(--shadow-sm); }
+    .debt-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 10px 0 0 10px; }
+    .debt-card.sev-high { background: rgba(180,64,57,0.04); }
+    .debt-card.sev-high::before { background: var(--terra); }
+    .debt-card.sev-med  { background: rgba(192,122,40,0.04); }
+    .debt-card.sev-med::before  { background: var(--amber); }
+    .debt-card.sev-low::before  { background: var(--blue); }
+    .debt-head { display: flex; align-items: flex-start; gap: 0.625rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .debt-title { font-size: 0.865rem; font-weight: 700; color: var(--text); flex: 1; min-width: 0; overflow-wrap: break-word; }
+    .debt-title code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; }
+    .sev-badge { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; margin-top: 1px; }
+    .sev-high .sev-badge { background: var(--terra-dim); color: var(--terra); }
+    .sev-med  .sev-badge { background: var(--amber-dim); color: var(--amber); }
+    .sev-low  .sev-badge { background: var(--blue-dim);  color: var(--blue); }
+    .debt-desc { font-size: 0.81rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.625rem; overflow-wrap: break-word; }
+    .debt-desc code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+    .debt-tip { font-size: 0.79rem; color: var(--text-dim); background: var(--bg-deep); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.75rem; line-height: 1.55; overflow-wrap: break-word; }
+    .debt-tip strong { color: var(--text); }
+    .debt-tip code { font-family: var(--mono); font-size: 0.84em; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; }
+
+    /* === Next Steps === */
+    .steps { list-style: none; display: flex; flex-direction: column; gap: 0.625rem; }
+    .step { display: grid; grid-template-columns: 2rem 1fr; gap: 0.875rem; align-items: start; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.875rem 1.125rem; box-shadow: var(--shadow-sm); min-width: 0; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--sage-dim); border: 1px solid rgba(74,140,106,0.25); color: var(--sage-deep); font-family: var(--mono); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-body { min-width: 0; }
+    .step-title { font-size: 0.875rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; overflow-wrap: break-word; }
+    .step-title code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; }
+    .step-desc { font-size: 0.81rem; color: var(--text-dim); line-height: 1.55; overflow-wrap: break-word; }
+    .step-desc code { font-family: var(--mono); font-size: 0.84em; background: var(--bg-deep); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+
+    /* === Animations === */
+    @keyframes fadeUp    { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeScale { from { opacity:0; transform:scale(0.96); }      to { opacity:1; transform:scale(1); }  }
+    .a-up    { animation: fadeUp    480ms cubic-bezier(0.16,1,0.3,1) both; }
+    .a-scale { animation: fadeScale 440ms cubic-bezier(0.16,1,0.3,1) both; }
+    .d1{animation-delay:  0ms} .d2{animation-delay: 60ms}
+    .d3{animation-delay:120ms} .d4{animation-delay:180ms}
+    .d5{animation-delay:240ms} .d6{animation-delay:300ms}
+    @media (prefers-reduced-motion: reduce) { .a-up, .a-scale { animation: none; } }
+
+    /* Mermaid overrides (scoped, never .node) */
+    .mermaid svg { font-family: var(--mono) !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile nav -->
+  <nav class="mobile-nav" aria-label="Page sections">
+    <div class="mn-inner">
+      <a href="#identity"       class="mn-link active">Identity</a>
+      <a href="#architecture"   class="mn-link">Architecture</a>
+      <a href="#activity"       class="mn-link">Activity</a>
+      <a href="#decisions"      class="mn-link">Decisions</a>
+      <a href="#state"          class="mn-link">State</a>
+      <a href="#mental-model"   class="mn-link">Mental Model</a>
+      <a href="#cognitive-debt" class="mn-link">Debt</a>
+      <a href="#next-steps"     class="mn-link">Next Steps</a>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Page sections">
+      <div class="sb-brand">
+        <span class="sb-eyebrow">Project Recap &mdash; 2026-03-28</span>
+        <div class="sb-name">octocat&#8209;death</div>
+      </div>
+      <nav class="sb-nav">
+        <a href="#identity"       class="sb-link active"><span class="sb-num">01</span>Identity</a>
+        <a href="#architecture"   class="sb-link"><span class="sb-num">02</span>Architecture</a>
+        <a href="#activity"       class="sb-link"><span class="sb-num">03</span>Recent Activity</a>
+        <a href="#decisions"      class="sb-link"><span class="sb-num">04</span>Decision Log</a>
+        <a href="#state"          class="sb-link"><span class="sb-num">05</span>State of Things</a>
+        <a href="#mental-model"   class="sb-link"><span class="sb-num">06</span>Mental Model</a>
+        <a href="#cognitive-debt" class="sb-link"><span class="sb-num">07</span>Cognitive Debt</a>
+        <a href="#next-steps"     class="sb-link"><span class="sb-num">08</span>Next Steps</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- 01 Identity -->
+      <section id="identity" class="section">
+        <div class="hero-wrap a-up d1">
+          <span class="hero-eyebrow">octocat-death &mdash; early development &mdash; 2026-03-28 &mdash; branch: trying-01</span>
+          <h1 class="hero-title">GitHub Status<br>Lottie Monitor</h1>
+          <p class="hero-pitch">A live GitHub availability monitor built on TanStack Start. Polls <code style="font-family:var(--mono);font-size:0.9em">github.com</code> every 10&thinsp;s via a server-side CORS proxy and plays one of three Lottie animations: up, down, and a 5-second victory sequence when GitHub recovers. Manual override lets you simulate outages without waiting for real failures.</p>
+          <div class="hero-grid">
+            <div class="hero-meta a-up d2"><span class="hm-label">Package</span><div class="hm-value"><code>octocat-death</code> &mdash; branch <code>trying-01</code></div></div>
+            <div class="hero-meta a-up d2"><span class="hm-label">Framework</span><div class="hm-value">TanStack Start &mdash; React 19 SSR</div></div>
+            <div class="hero-meta a-up d3"><span class="hm-label">Stage</span><div class="hm-value"><span class="badge b-amber">Early Dev</span> &mdash; feature-complete, needs polish</div></div>
+            <div class="hero-meta a-up d3"><span class="hm-label">Animations</span><div class="hm-value">lottie-react 2.4.1 &mdash; lazy-loaded</div></div>
+            <div class="hero-meta a-up d4"><span class="hm-label">Styling</span><div class="hm-value">Tailwind CSS 4 + plain CSS &mdash; light-mode only</div></div>
+            <div class="hero-meta a-up d4"><span class="hm-label">Toolchain</span><div class="hm-value">Vite 7 &middot; TypeScript 5.7 &middot; Vitest 3</div></div>
+            <div class="hero-meta a-up d5"><span class="hm-label">Git Activity</span><div class="hm-value">4 commits today &middot; 1 contributor (David Schargel)</div></div>
+            <div class="hero-meta a-up d5"><span class="hm-label">Uncommitted</span><div class="hm-value"><span class="badge b-amber">2 modified</span> GitHubStatus.tsx + assets/lottie-github-down.json</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 Architecture -->
+      <section id="architecture" class="section">
+        <div class="s-label"><span class="s-dot blue"></span>Architecture</div>
+        <h2 class="s-title">System Snapshot</h2>
+        <p class="s-sub">Request flow, state machine, and asset pipeline as the project exists today. Click the diagram or use &#x26F6; to open full-size. Ctrl/Cmd+scroll or drag to explore.</p>
+
+        <div class="diagram-hero a-up d2">
+          <div class="mermaid-wrap" id="mermaid-main">
+            <div class="zoom-controls">
+              <button class="zoom-btn" id="zi-main" title="Zoom in">+</button>
+              <button class="zoom-btn" id="zo-main" title="Zoom out">&minus;</button>
+              <button class="zoom-btn" id="zr-main" title="Reset">&#8857;</button>
+              <button class="zoom-btn" id="ze-main" title="Open full-size">&#x26F6;</button>
+            </div>
+            <div class="mermaid-viewport" id="vp-main">
+              <div class="mermaid-canvas" id="cv-main">
+<pre class="mermaid">%%{init:{"theme":"base","themeVariables":{"primaryColor":"#d3e8db","primaryBorderColor":"#4a8c6a","primaryTextColor":"#1e3428","lineColor":"#6a9e80","secondaryColor":"#d2e5f5","secondaryBorderColor":"#3a7ca5","tertiaryColor":"#f0ebe0","tertiaryBorderColor":"#b8a882","background":"#f2ebe0","clusterBkg":"rgba(58,124,165,0.05)","clusterBorder":"#3a7ca5","fontFamily":"IBM Plex Mono, monospace","fontSize":"13px","edgeLabelBackground":"#faf6f0"}}}%%
+flowchart TD
+    Browser["Browser Client\nReact 19 + TanStack Router"]
+    Root["__root.tsx\nSSR Shell - shellComponent"]
+    Index["/ index.tsx\nApp - renders GitHubStatus"]
+    About["/about\nStatic placeholder page"]
+    Status["GitHubStatus.tsx\nCore polling and state machine"]
+    ServerFn["fetchGitHubStatus\ncreateServerFn server-side"]
+    GitHub["github.com\nHEAD request 5s timeout"]
+    Lottie["LottiePlayer\nReact.lazy + Suspense"]
+    Assets["src/assets\nup / down / victory JSON"]
+
+    Browser -->|"SSR hydration"| Root
+    Root --> Index
+    Root --> About
+    Index --> Status
+    Status -->|"polls every 10s"| ServerFn
+    ServerFn -->|"HEAD https"| GitHub
+    GitHub -->|"up: boolean"| ServerFn
+    ServerFn -->|"result"| Status
+    Status -->|"displayStatus"| Lottie
+    Lottie -->|"imports"| Assets
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 Recent Activity -->
+      <section id="activity" class="section">
+        <div class="s-label"><span class="s-dot sage"></span>Recent Activity</div>
+        <h2 class="s-title">What Happened</h2>
+        <p class="s-sub">Built from scratch in a single session today. Git commit history was not directly accessible; this narrative is reconstructed from source artifacts, prompts, and the docs trail.</p>
+
+        <div class="timeline">
+          <div class="tl-group">
+            <div class="tl-group-head blue"><span class="tl-group-title">Infrastructure</span></div>
+            <div class="tl-item a-up d1">
+              <div class="tl-title"><span class="tl-tag tag-infra">infra</span>TanStack Start scaffolded via create-tanstack</div>
+              <p class="tl-desc">Bootstrapped in file-router mode with TypeScript, Tailwind CSS 4, and npm. The original scaffold lives in <code>set-aside/</code>; active development moved to <code>octocat-death/</code>. All deps at leading-edge versions: Vite 7, React 19, Vitest 3, TanStack Start latest.</p>
+            </div>
+            <div class="tl-item a-up d2">
+              <div class="tl-title"><span class="tl-tag tag-infra">infra</span>Active branch is <code>trying-01</code> tracking <code>origin/trying-01</code></div>
+              <p class="tl-desc">The root README says &ldquo;GO TO trying-01 BRANCH!!!&rdquo; &mdash; and we are on it. This is the canonical working branch. All 4 commits were made here today by David Schargel.</p>
+            </div>
+          </div>
+
+          <div class="tl-group">
+            <div class="tl-group-head"><span class="tl-group-title">Feature Work</span></div>
+            <div class="tl-item a-up d1">
+              <div class="tl-title"><span class="tl-tag tag-feat">feature</span>Server-side GitHub proxy via <code>createServerFn</code></div>
+              <p class="tl-desc"><code>fetchGitHubStatus</code> issues a <code>HEAD</code> request to <code>https://github.com</code> with a 5-second <code>AbortSignal.timeout</code>. Returns <code>{ up: boolean }</code>. Co-located in <code>GitHubStatus.tsx</code> &mdash; no separate <code>api/</code> route file.</p>
+            </div>
+            <div class="tl-item a-up d2">
+              <div class="tl-title"><span class="tl-tag tag-feat">feature</span>Three-state animation machine: up / down / victory</div>
+              <p class="tl-desc"><code>displayStatus = manualOverride ?? realStatus</code>. Victory fires on a real down&rarr;up flip (detected via <code>prevRealStatus.current</code>) for 5 seconds, or on manual &ldquo;GitHub Up!&rdquo; press for 1 second. Each trigger owns a separate timer ref.</p>
+            </div>
+            <div class="tl-item a-up d3">
+              <div class="tl-title"><span class="tl-tag tag-feat">feature</span>Manual outage toggle with clean state coexistence</div>
+              <p class="tl-desc">&ldquo;GitHub Down!&rdquo; &rarr; &ldquo;GitHub Up!&rdquo; &rarr; auto-reset after 1&thinsp;s. Real poll runs continuously in the background; <code>manualOverride</code> shadows it temporarily and clears when the cycle completes.</p>
+            </div>
+            <div class="tl-item a-up d4">
+              <div class="tl-title"><span class="tl-tag tag-feat">feature</span>Lazy-loaded Lottie with SSR Suspense boundary</div>
+              <p class="tl-desc"><code>lottie-react</code> wrapped in <code>React.lazy()</code> + <code>&lt;Suspense&gt;</code> to avoid crashing TanStack Start&rsquo;s SSR pass. <code>.lottie-placeholder</code> fallback keeps layout stable during hydration.</p>
+            </div>
+          </div>
+
+          <div class="tl-group">
+            <div class="tl-group-head amber"><span class="tl-group-title">In Progress / Latest</span></div>
+            <div class="tl-item a-up d1">
+              <div class="tl-title"><span class="tl-tag tag-feat">feature</span>Confetti animation added &mdash; <code>f8248b4</code> (Mar 28, 1:35 PM)</div>
+              <p class="tl-desc">Most recent commit adds <code>confetti.json</code> to <code>octocat-death/assets/</code> for &ldquo;celebratory effects.&rdquo; Likely intended to play on the victory state or as an overlay. <code>GitHubStatus.tsx</code> has uncommitted modifications &mdash; the integration is in progress.</p>
+            </div>
+            <div class="tl-item a-up d2">
+              <div class="tl-title"><span class="tl-tag tag-infra">infra</span>Uncommitted changes to <code>GitHubStatus.tsx</code></div>
+              <p class="tl-desc">The core component has local modifications not yet committed. Likely related to the confetti animation integration. <code>assets/lottie-github-down.json</code> in the root (orphan) directory is also modified.</p>
+            </div>
+          </div>
+
+          <div class="tl-group">
+            <div class="tl-group-head mint"><span class="tl-group-title">Styling</span></div>
+            <div class="tl-item a-up d1">
+              <div class="tl-title"><span class="tl-tag tag-style">style</span>Sea-ink palette &mdash; Manrope + Fraunces, multi-layer gradients</div>
+              <p class="tl-desc">Full CSS custom-property system: <code>--sea-ink</code> (#173a40), <code>--lagoon</code> (#4fb8b2), <code>--palm</code> (#2f6a4a). Multi-layered radial gradient background with grid overlay via <code>::after</code>. Light-mode only by design decision.</p>
+            </div>
+            <div class="tl-item a-up d2">
+              <div class="tl-title"><span class="tl-tag tag-style">style</span>ThemeToggle present but decoupled from CSS</div>
+              <p class="tl-desc">The 3-state ThemeToggle (light/dark/auto) came with the scaffold and was retained. But dark mode CSS was removed from <code>styles.css</code> during the light-only decision, leaving the component visually ineffective for dark and auto states.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 Decision Log -->
+      <section id="decisions" class="section">
+        <div class="s-label"><span class="s-dot amber"></span>Decisions</div>
+        <h2 class="s-title">Decision Log</h2>
+        <p class="s-sub">Key choices made during this build &mdash; 4 commits by David Schargel today on <code style="font-family:var(--mono);font-size:0.85em">trying-01</code>. The reasoning that evaporates fastest when context is lost.</p>
+
+        <div class="dec-card a-up d1">
+          <div class="dec-title">Use <code>createServerFn</code>, not a separate API route file</div>
+          <p class="dec-body">TanStack Start&rsquo;s <code>createServerFn</code> lets server logic live in the same file as the component that calls it. <code>fetchGitHubStatus</code> stays in <code>GitHubStatus.tsx</code> &mdash; no routing configuration, no separate <code>api/</code> directory. The alternative (a dedicated route under <code>src/routes/api/</code>) was rejected as unnecessary ceremony for a single function.</p>
+          <div class="dec-tags"><span class="badge b-blue">architecture</span><span class="badge b-sage">TanStack Start</span></div>
+        </div>
+
+        <div class="dec-card a-up d2">
+          <div class="dec-title">Lazy-load <code>lottie-react</code> via <code>React.lazy()</code> to survive SSR</div>
+          <p class="dec-body"><code>lottie-react</code> accesses the DOM at module evaluation time. A direct import throws on TanStack Start&rsquo;s server render pass. The fix: <code>React.lazy()</code> defers the import until client hydration. A <code>Suspense</code> boundary handles the loading state. Called out explicitly in CLAUDE.md as a non-obvious requirement.</p>
+          <div class="dec-tags"><span class="badge b-blue">SSR</span><span class="badge b-amber">gotcha</span></div>
+        </div>
+
+        <div class="dec-card a-up d3">
+          <div class="dec-title">Two separate timer refs &mdash; <code>victoryTimerRef</code> and <code>manualTimerRef</code></div>
+          <p class="dec-body">Victory plays in two scenarios: a real status flip (5&thinsp;s, owned by <code>victoryTimerRef</code>) and a manual &ldquo;GitHub Up!&rdquo; press (1&thinsp;s, owned by <code>manualTimerRef</code>). Consolidating into one timer would create ambiguity over which duration to apply when both paths are active simultaneously. Separate refs give each scenario exclusive ownership.</p>
+          <div class="dec-tags"><span class="badge b-blue">state design</span></div>
+        </div>
+
+        <div class="dec-card a-up d4">
+          <div class="dec-title">Light-mode only &mdash; dark mode CSS deliberately removed</div>
+          <p class="dec-body">Rather than shipping a half-finished dual-mode experience, dark mode variables and media queries were stripped from <code>styles.css</code>. One polished mode beats two mediocre ones. ThemeToggle was left in the layout (scaffold default) but is effectively a no-op for dark/auto. Documented in CLAUDE.md.</p>
+          <div class="dec-tags"><span class="badge b-sage">styling</span></div>
+        </div>
+
+        <div class="dec-card a-up d5">
+          <div class="dec-title"><code>shellComponent</code> vs <code>component</code> in <code>__root.tsx</code></div>
+          <p class="dec-body">The root route uses <code>shellComponent: RootDocument</code> (SSR shell, owns <code>&lt;html&gt;</code>/<code>&lt;head&gt;</code>/<code>&lt;body&gt;</code>), not <code>component</code>. This is the TanStack Start SSR pattern. Using <code>component</code> here would break the document structure. This distinction doesn&rsquo;t exist in plain TanStack Router (SPA-only) and is easy to get wrong when coming from that background.</p>
+          <div class="dec-tags"><span class="badge b-blue">SSR</span><span class="badge b-sage">routing</span></div>
+        </div>
+
+        <div class="dec-card a-up d6">
+          <div class="dec-title">Tailwind utilities + plain CSS classes &mdash; mixed approach</div>
+          <p class="dec-body">The seed prompt asked for plain CSS only, but the scaffold included Tailwind 4. The resolution: Tailwind utility classes handle the boilerplate layout/spacing inherited from the scaffold; all new feature styles (<code>.github-status</code>, <code>.toggle-btn</code>, <code>.lottie-container</code>, <code>.status-label</code>) are plain CSS appended to <code>styles.css</code>.</p>
+          <div class="dec-tags"><span class="badge b-sage">styling</span></div>
+        </div>
+      </section>
+
+      <!-- 05 State of Things -->
+      <section id="state" class="section">
+        <div class="s-label"><span class="s-dot sage"></span>Status</div>
+        <h2 class="s-title">State of Things</h2>
+        <p class="s-sub">A quick read on what&rsquo;s solid, what&rsquo;s in-flight, and what&rsquo;s waiting.</p>
+
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-green a-scale d1">
+            <span class="kpi-label">Working</span>
+            <span class="kpi-num">6</span>
+            <p class="kpi-desc">Core features shipped and functional</p>
+            <ul class="kpi-list">
+              <li>10s polling with server-side CORS proxy</li>
+              <li>Up / down / victory animations</li>
+              <li>Manual override toggle button</li>
+              <li>Lazy Lottie with SSR Suspense boundary</li>
+              <li>Sea-ink design system and custom CSS</li>
+              <li>Responsive island layout</li>
+            </ul>
+          </div>
+
+          <div class="kpi-card kpi-blue a-scale d2">
+            <span class="kpi-label">In Progress</span>
+            <span class="kpi-num">4</span>
+            <p class="kpi-desc">Unfinished or placeholder</p>
+            <ul class="kpi-list">
+              <li>Footer &mdash; &ldquo;Your name here&rdquo; placeholder text</li>
+              <li>About page &mdash; generic scaffold copy</li>
+              <li>Header &mdash; TanStack branding, not project branding</li>
+              <li>Tests &mdash; Vitest configured, zero test files written</li>
+              <li>Confetti animation added but not yet wired into GitHubStatus</li>
+            </ul>
+          </div>
+
+          <div class="kpi-card kpi-amber a-scale d3">
+            <span class="kpi-label">Degraded</span>
+            <span class="kpi-num">1</span>
+            <p class="kpi-desc">Known functional issue</p>
+            <ul class="kpi-list">
+              <li>ThemeToggle cycles through dark and auto modes but dark CSS was removed &mdash; the button has no visible effect for those states</li>
+            </ul>
+          </div>
+
+          <div class="kpi-card kpi-red a-scale d4">
+            <span class="kpi-label">Blocked</span>
+            <span class="kpi-num">0</span>
+            <p class="kpi-desc">Nothing externally blocked</p>
+            <ul class="kpi-list">
+              <li>Note: &ldquo;trying-01&rdquo; branch flagged in root README &mdash; unknown if it contains divergent work that should inform next steps</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 Mental Model -->
+      <section id="mental-model" class="section">
+        <div class="s-label"><span class="s-dot blue"></span>Mental Model</div>
+        <h2 class="s-title">What To Hold In Your Head</h2>
+        <p class="s-sub">The seven things you need to remember to work effectively on this codebase.</p>
+
+        <div class="mental-grid">
+          <div class="mental-card a-up d1">
+            <span class="mc-num">01</span>
+            <h3 class="mc-title"><code>manualOverride</code> always wins</h3>
+            <p class="mc-body"><code>displayStatus = manualOverride ?? realStatus</code>. The real poll runs continuously but <code>manualOverride</code> shadows it completely until cleared to <code>null</code>. When the toggle fully cycles, it calls <code>setManualOverride(null)</code> and real status resumes.</p>
+          </div>
+
+          <div class="mental-card a-up d2">
+            <span class="mc-num">02</span>
+            <h3 class="mc-title">Victory has two triggers, two durations</h3>
+            <p class="mc-body">Real down&rarr;up flip fires <code>setManualOverride('victory')</code> for <strong>5 seconds</strong> via <code>victoryTimerRef</code>. Manual &ldquo;GitHub Up!&rdquo; fires the same state for <strong>1 second</strong> via <code>manualTimerRef</code>. Different refs, different durations &mdash; don&rsquo;t consolidate them.</p>
+          </div>
+
+          <div class="mental-card a-up d3">
+            <span class="mc-num">03</span>
+            <h3 class="mc-title"><code>lottie-react</code> must be lazy-loaded</h3>
+            <p class="mc-body">lottie-react accesses the DOM at import time. TanStack Start runs SSR. Direct import = server crash. Pattern: <code>React.lazy()</code> + <code>&lt;Suspense&gt;</code>. Moving the import or adding another animation library will silently break SSR.</p>
+          </div>
+
+          <div class="mental-card a-up d4">
+            <span class="mc-num">04</span>
+            <h3 class="mc-title"><code>createServerFn</code> is the server primitive</h3>
+            <p class="mc-body">Server-only logic lives in component files via <code>createServerFn</code>, not in separate <code>api/</code> routes. Any future server-side work (auth, secrets, DB) should follow this pattern. The compiled output stays co-located.</p>
+          </div>
+
+          <div class="mental-card a-up d5">
+            <span class="mc-num">05</span>
+            <h3 class="mc-title"><code>routeTree.gen.ts</code> is auto-generated</h3>
+            <p class="mc-body">Never edit <code>src/routeTree.gen.ts</code> manually. The TanStack Router Vite plugin regenerates it on every dev server start. Drop a file in <code>src/routes/</code> and the route registers automatically.</p>
+          </div>
+
+          <div class="mental-card a-up d6">
+            <span class="mc-num">06</span>
+            <h3 class="mc-title"><code>shellComponent</code> is not <code>component</code></h3>
+            <p class="mc-body">The root route uses <code>shellComponent</code> (owns <code>&lt;html&gt;</code>/<code>&lt;head&gt;</code>/<code>&lt;body&gt;</code>), not <code>component</code>. Wrong choice here breaks the server-rendered document structure. This distinction doesn&rsquo;t exist in plain TanStack Router.</p>
+          </div>
+
+          <div class="mental-card a-up d6">
+            <span class="mc-num">07</span>
+            <h3 class="mc-title">Dark mode is off; Lottie copies are orphans</h3>
+            <p class="mc-body">Dark CSS vars were stripped. ThemeToggle dark/auto states do nothing visually. Only <code>octocat-death/src/assets/</code> Lottie files are used at runtime &mdash; the copies in root <code>assets/</code>, root <code>src/assets/</code>, and <code>octocat-death/assets/</code> are unused orphans.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 Cognitive Debt -->
+      <section id="cognitive-debt" class="section">
+        <div class="s-label"><span class="s-dot amber"></span>Cognitive Debt</div>
+        <h2 class="s-title">Hotspots</h2>
+        <p class="s-sub">Areas where understanding is weakest or rationale is undocumented. Each has a concrete, actionable suggestion.</p>
+
+        <div class="debt-card sev-high a-up d1">
+          <div class="debt-head">
+            <div class="debt-title">ThemeToggle cycles states that have no CSS behind them</div>
+            <span class="sev-badge">High</span>
+          </div>
+          <p class="debt-desc"><code>ThemeToggle.tsx</code> is fully wired: it cycles light/dark/auto, persists to localStorage, and applies <code>class="dark"</code> to <code>&lt;html&gt;</code>. But dark mode CSS variables were stripped from <code>styles.css</code>. Pressing &ldquo;Dark&rdquo; applies the class &mdash; nothing in the stylesheet responds. This is a silent broken feature invisible to anyone unfamiliar with the CLAUDE.md note.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Either (a) remove ThemeToggle from <code>__root.tsx</code> and the Header to be honest about scope, or (b) re-add dark mode <code>@media (prefers-color-scheme: dark)</code> CSS variables to <code>styles.css</code>. Document the outcome clearly in CLAUDE.md. Source: <code>ThemeToggle.tsx</code> + CLAUDE.md line about light-mode only.</p>
+        </div>
+
+        <div class="debt-card sev-med a-up d2">
+          <div class="debt-head">
+            <div class="debt-title">Two-timer-ref interaction is undocumented</div>
+            <span class="sev-badge">Medium</span>
+          </div>
+          <p class="debt-desc">The interaction between <code>victoryTimerRef</code> and <code>manualTimerRef</code> in <code>GitHubStatus.tsx</code> (L29&ndash;31, L78&ndash;88) is subtle. If &ldquo;GitHub Up!&rdquo; is pressed while a real-status victory is already playing, <code>handleToggle</code> sets a new <code>manualOverride('victory')</code> without clearing <code>victoryTimerRef</code> &mdash; two timers are now racing to call <code>setManualOverride(null)</code>. The behavior is likely acceptable but the intent is unwritten.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Add a block comment above the timer refs explaining: (1) what each owns, (2) expected behavior when both are active, (3) why they&rsquo;re not consolidated. Source: <code>GitHubStatus.tsx L29&ndash;31, L78&ndash;88</code>.</p>
+        </div>
+
+        <div class="debt-card sev-low a-up d3">
+          <div class="debt-head">
+            <div class="debt-title">Confetti animation added but not yet wired into <code>GitHubStatus.tsx</code></div>
+            <span class="sev-badge">Low</span>
+          </div>
+          <p class="debt-desc">Commit <code>f8248b4</code> added <code>confetti.json</code> to <code>octocat-death/assets/</code> for &ldquo;celebratory effects.&rdquo; The core component <code>GitHubStatus.tsx</code> has local uncommitted modifications, likely the in-progress integration. But the confetti asset is in the <code>octocat-death/assets/</code> directory (which is separate from the runtime <code>src/assets/</code>) &mdash; the import path will need updating when wiring it in.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Move <code>confetti.json</code> to <code>octocat-death/src/assets/</code> before importing it. Then commit the <code>GitHubStatus.tsx</code> changes that integrate it. Clarify whether confetti plays as an overlay on victory or replaces the victory Lottie. Source: <code>f8248b4</code>, <code>git status</code> (GitHubStatus.tsx modified).</p>
+        </div>
+
+        <div class="debt-card sev-low a-up d4">
+          <div class="debt-head">
+            <div class="debt-title">Zero tests despite Vitest being configured</div>
+            <span class="sev-badge">Low</span>
+          </div>
+          <p class="debt-desc">Vitest 3 is installed and <code>npm run test</code> runs, but no test files exist. The most valuable tests would cover the state machine logic in <code>GitHubStatus.tsx</code> &mdash; specifically the <code>manualOverride / realStatus</code> interaction, which is the most complex behavior and easiest to accidentally break during refactoring.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Create <code>src/components/GitHubStatus.test.tsx</code>. Priority cases: (1) real down&rarr;up flip triggers 5s victory, (2) manual toggle overrides real status, (3) manual cycle resets after 1s, (4) unmount cleanup cancels both timers. Source: <code>package.json devDependencies</code>, <code>GitHubStatus.tsx</code>.</p>
+        </div>
+
+        <div class="debt-card sev-low a-up d5">
+          <div class="debt-head">
+            <div class="debt-title">Lottie JSON files duplicated across three directories</div>
+            <span class="sev-badge">Low</span>
+          </div>
+          <p class="debt-desc">The same three Lottie JSON files appear in <code>assets/</code> (root), <code>src/assets/</code> (root), and <code>octocat-death/assets/</code>. Only <code>octocat-death/src/assets/</code> is imported at runtime (via <code>GitHubStatus.tsx</code> L8&ndash;10). The other locations are orphans from earlier experimentation and add noise to the file tree.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Delete root <code>assets/</code>, root <code>src/assets/</code>, and <code>octocat-death/assets/</code>. Verify no other import paths reference them first. Source: file tree + <code>GitHubStatus.tsx L8&ndash;10</code>.</p>
+        </div>
+
+        <div class="debt-card sev-low a-up d6">
+          <div class="debt-head">
+            <div class="debt-title">Header and Footer are unmodified TanStack boilerplate</div>
+            <span class="sev-badge">Low</span>
+          </div>
+          <p class="debt-desc"><code>Header.tsx</code> links to TanStack&rsquo;s X and GitHub accounts. <code>Footer.tsx</code> says &ldquo;Your name here. All rights reserved.&rdquo; and links to TanStack socials. <code>about.tsx</code> says &ldquo;A small starter with room to grow.&rdquo; None of this reflects the octocat-death project and will read as unfinished to any outside viewer.</p>
+          <p class="debt-tip"><strong>Fix:</strong> Customize or remove Header, Footer, and About page. If the project is single-purpose, consider dropping the multi-page navigation entirely and keeping only a minimal footer attribution. Source: <code>Header.tsx</code>, <code>Footer.tsx L8</code>, <code>about.tsx L15</code>.</p>
+        </div>
+      </section>
+
+      <!-- 08 Next Steps -->
+      <section id="next-steps" class="section">
+        <div class="s-label"><span class="s-dot mint"></span>Momentum</div>
+        <h2 class="s-title">Next Steps</h2>
+        <p class="s-sub">Where the project&rsquo;s momentum was pointing. Not prescriptive &mdash; just what the active work and open issues suggest as natural continuation.</p>
+
+        <ol class="steps">
+          <li class="step a-up d1">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Commit and integrate the confetti animation</div>
+              <p class="step-desc"><code>GitHubStatus.tsx</code> has uncommitted modifications &mdash; this is active in-flight work. Move <code>confetti.json</code> from <code>octocat-death/assets/</code> to <code>octocat-death/src/assets/</code>, wire it into the component, and commit. Decide whether confetti plays as an overlay on top of the victory Lottie or replaces it.</p>
+            </div>
+          </li>
+          <li class="step a-up d2">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Resolve the ThemeToggle / dark mode mismatch</div>
+              <p class="step-desc">Either re-add dark mode CSS vars to <code>styles.css</code> or remove ThemeToggle from the layout. Current state is a silent broken feature. Whichever direction, document it in CLAUDE.md so the next session doesn&rsquo;t rediscover it.</p>
+            </div>
+          </li>
+          <li class="step a-up d3">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Write state machine tests for <code>GitHubStatus</code></div>
+              <p class="step-desc">Vitest is configured and ready. Create <code>src/components/GitHubStatus.test.tsx</code>. Start with the four priority cases: real flip triggers victory, manual override shadows real status, manual cycle resets after 1&thinsp;s, and unmount cleanup cancels both timers. The two-timer design is the most breakable part of this codebase.</p>
+            </div>
+          </li>
+          <li class="step a-up d4">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Replace TanStack boilerplate in Header, Footer, About</div>
+              <p class="step-desc">Swap out TanStack social links, &ldquo;Your name here&rdquo;, and generic About copy with project-relevant content. Or simplify to a single-page layout with no navigation at all &mdash; the app is a single-purpose tool and doesn&rsquo;t need multi-page structure.</p>
+            </div>
+          </li>
+          <li class="step a-up d5">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <div class="step-title">Clean up orphaned Lottie JSON directories</div>
+              <p class="step-desc">Delete root <code>assets/</code>, root <code>src/assets/</code>, and <code>octocat-death/assets/</code>. Only <code>octocat-death/src/assets/</code> is needed at runtime. Reduces repo noise and import-path confusion for future contributors.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+    </main>
+  </div><!-- /layout -->
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+
+    // Render Mermaid diagrams then set up zoom/pan
+    async function init() {
+      await mermaid.run({ querySelector: '.mermaid' });
+      setupDiagram('main');
+    }
+
+    // === Zoom / Pan Module ===
+    function setupDiagram(id) {
+      const viewport = document.getElementById('vp-' + id);
+      const canvas   = document.getElementById('cv-' + id);
+      if (!viewport || !canvas) return;
+
+      let zoom = 1.0, panX = 0, panY = 0;
+      let dragging = false, hasDragged = false;
+      let startX = 0, startY = 0, lastPX = 0, lastPY = 0;
+      const STEP = 0.2, MIN = 0.3, MAX = 4.0;
+
+      function apply() {
+        canvas.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+        canvas.style.transformOrigin = '0 0';
+      }
+
+      function clamp(z) { return Math.max(MIN, Math.min(MAX, z)); }
+
+      function zoomCenter(nz) {
+        const r = viewport.getBoundingClientRect();
+        const cx = r.width / 2, cy = r.height / 2;
+        const ratio = nz / zoom;
+        panX = cx - ratio * (cx - panX);
+        panY = cy - ratio * (cy - panY);
+        zoom = nz;
+        apply();
+      }
+
+      viewport.addEventListener('wheel', e => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          zoomCenter(clamp(zoom + (e.deltaY > 0 ? -STEP : STEP)));
+        }
+      }, { passive: false });
+
+      viewport.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        dragging = true; hasDragged = false;
+        startX = e.clientX; startY = e.clientY;
+        lastPX = panX; lastPY = panY;
+        viewport.classList.add('is-dragging');
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasDragged = true;
+        panX = lastPX + dx; panY = lastPY + dy;
+        apply();
+      });
+
+      document.addEventListener('mouseup', () => {
+        dragging = false;
+        viewport.classList.remove('is-dragging');
+      });
+
+      viewport.addEventListener('click', () => {
+        if (!hasDragged) openInTab(canvas);
+      });
+
+      document.getElementById('zi-' + id)?.addEventListener('click', e => { e.stopPropagation(); zoomCenter(clamp(zoom + STEP)); });
+      document.getElementById('zo-' + id)?.addEventListener('click', e => { e.stopPropagation(); zoomCenter(clamp(zoom - STEP)); });
+      document.getElementById('zr-' + id)?.addEventListener('click', e => { e.stopPropagation(); zoom = 1; panX = 0; panY = 0; apply(); });
+      document.getElementById('ze-' + id)?.addEventListener('click', e => { e.stopPropagation(); openInTab(canvas); });
+
+      apply();
+    }
+
+    function openInTab(canvas) {
+      const svg = canvas.querySelector('svg');
+      if (!svg) return;
+      const str = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([str], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, '_blank');
+      if (win) win.addEventListener('load', () => URL.revokeObjectURL(url));
+    }
+
+    // === Sidebar active state on scroll ===
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.sb-link, .mn-link');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l =>
+            l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id)
+          );
+        }
+      });
+    }, { rootMargin: '-15% 0px -72% 0px' });
+    sections.forEach(s => io.observe(s));
+
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
